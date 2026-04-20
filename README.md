@@ -115,7 +115,7 @@ If the browser blocks requests, confirm **`CLIENT_ORIGIN`** on Render is exactly
 
 ### Signup/login returns **405** on Vercel
 
-The browser is **POST**ing to the **static Vercel app**, not to Render. **`VITE_API_URL`** is missing, wrong, or the frontend was not rebuilt after setting it. Fix: Vercel → Environment Variables → **`VITE_API_URL`** = `https://YOUR-SERVICE.onrender.com` (no trailing slash) → **Redeploy**.
+Usually the SPA sent **`POST /api/...`** to Vercel’s static handler (wrong). The repo’s **`vercel.json`** proxies **`/api/*`** to your Render API — if your Render URL changes, edit that file’s `destination` and redeploy. Alternatively set **`VITE_API_URL`** to your Render base URL (no trailing slash) and **Redeploy** so the client calls Render directly.
 
 You should then see the green **MongoDB connected** bar on the deployed site.
 
