@@ -16,8 +16,33 @@ export function getMongoConnectHint() {
   return mongoConnectHint;
 }
 
+/** Safe flags for /api/health — no secret values. */
+export function getMongoEnvDiagnostics() {
+  return {
+    hasMONGODB_URI: Boolean(trimEnvValue(process.env.MONGODB_URI)),
+    hasMONGODB_USER: Boolean(trimEnvValue(process.env.MONGODB_USER)),
+    hasMONGODB_PASSWORD:
+      process.env.MONGODB_PASSWORD != null && String(process.env.MONGODB_PASSWORD).length > 0,
+    hasMONGODB_CLUSTER_HOST: Boolean(trimEnvValue(process.env.MONGODB_CLUSTER_HOST)),
+    useInMemoryDB: process.env.USE_IN_MEMORY_DB === "true",
+  };
+}
+
 function setMongoConnectHint(hint) {
   mongoConnectHint = typeof hint === "string" && hint.trim() ? hint.trim() : null;
+}
+
+/** Strips whitespace and surrounding quotes (common when pasting into hosting UIs). */
+function trimEnvValue(value) {
+  if (value === undefined || value === null) return "";
+  let s = String(value).trim();
+  if (
+    (s.startsWith('"') && s.endsWith('"')) ||
+    (s.startsWith("'") && s.endsWith("'"))
+  ) {
+    s = s.slice(1, -1).trim();
+  }
+  return s;
 }
 
 function hintFromDriverError(err, isAtlas) {
@@ -53,12 +78,12 @@ const defaultOptions = {
  * (password is URL-encoded for you — use this if your password has @ # : / ? etc.).
  */
 function resolveMongoUri() {
-  const direct = process.env.MONGODB_URI?.trim();
+  const direct = trimEnvValue(process.env.MONGODB_URI);
   if (direct) return direct;
 
-  const user = process.env.MONGODB_USER?.trim();
+  const user = trimEnvValue(process.env.MONGODB_USER);
   const password = process.env.MONGODB_PASSWORD;
-  let clusterHost = process.env.MONGODB_CLUSTER_HOST?.trim();
+  let clusterHost = trimEnvValue(process.env.MONGODB_CLUSTER_HOST);
   if (clusterHost) {
     clusterHost = clusterHost.replace(/^mongodb\+srv:\/\//, "").replace(/\/$/, "");
   }
@@ -123,6 +148,7 @@ export async function connectDB() {
       const msg =
         "Set USE_IN_MEMORY_DB=true for local dev, or set MONGODB_URI / MONGODB_USER+MONGODB_PASSWORD+MONGODB_CLUSTER_HOST (see .env.example).";
       console.error(msg);
+      console.error("Mongo env diagnostics (no secrets):", getMongoEnvDiagnostics());
       throw new Error(msg);
     }
 

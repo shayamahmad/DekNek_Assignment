@@ -2,7 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import mongoose from "mongoose";
-import { connectDB, getMongoConnectHint } from "./config/db.js";
+import { connectDB, getMongoConnectHint, getMongoEnvDiagnostics } from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
@@ -65,12 +65,16 @@ function buildMongoHealth() {
         "Database not connected. Set MONGODB_URI (or MONGODB_USER + MONGODB_PASSWORD + MONGODB_CLUSTER_HOST) in this API’s environment variables (e.g. server/.env locally, or your host’s dashboard in production), then restart. Use Atlas → Database → Connect → Drivers for the connection string.";
     }
   }
-  return {
+  const payload = {
     connected,
     readyState: rs,
     state: mongoStateLabels[rs] ?? "disconnected",
     hint,
   };
+  if (!connected) {
+    payload.env = getMongoEnvDiagnostics();
+  }
+  return payload;
 }
 
 app.get("/api/health", (_req, res) => {
