@@ -6,9 +6,31 @@ function normalizeApiBase(url) {
   return t.replace(/\/+$/, "");
 }
 
-// Dev: empty baseURL + Vite proxy → /api on localhost:5000. Production: VITE_API_URL = Render (etc.) base URL, no /api suffix.
-const baseURL =
-  normalizeApiBase(import.meta.env.VITE_API_URL) || (import.meta.env.DEV ? "" : "");
+/**
+ * Dev: Vite proxies /api → localhost:5000.
+ * Production build on localhost (vite preview): use VITE_API_URL if set.
+ * Production on a real host (e.g. *.vercel.app): use same-origin /api so vercel.json can rewrite to Render — avoids CORS and bad VITE_API_URL values.
+ */
+function resolveApiBaseURL() {
+  const envUrl = normalizeApiBase(import.meta.env.VITE_API_URL);
+
+  if (import.meta.env.DEV) {
+    return "";
+  }
+
+  if (typeof window === "undefined") {
+    return envUrl || "";
+  }
+
+  const h = window.location.hostname;
+  if (h === "localhost" || h === "127.0.0.1") {
+    return envUrl || "";
+  }
+
+  return "";
+}
+
+const baseURL = resolveApiBaseURL();
 
 export const api = axios.create({
   baseURL,
