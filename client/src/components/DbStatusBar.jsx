@@ -148,19 +148,16 @@ export default function DbStatusBar() {
 
   const deployedMongoFallback = (
     <>
-      Database isn&apos;t ready on your API yet. On <strong>Render</strong> set <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">MONGODB_URI</code>{" "}
-      (same as local <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">server/.env</code>),{" "}
-      <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">JWT_SECRET</code>, and{" "}
-      <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">CLIENT_ORIGIN</code> = this site&apos;s URL;
-      restart the service; check <strong>Render → Logs</strong> for Atlas errors. Vercel:{" "}
-      <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">VITE_API_URL</code>
+      MongoDB isn&apos;t connected on the API. Set env on <strong>Render</strong> (copy from local{" "}
+      <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">server/.env</code>), check{" "}
+      <strong>Logs</strong> for errors. Vercel: <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">VITE_API_URL</code>
       {apiBase ? (
         <>
           {" "}
-          = <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px] break-all">{apiBase}</code>
+          → <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px] break-all">{apiBase}</code>
         </>
       ) : null}
-      . Details: <strong>README</strong> → Production.
+      . More: README → Production.
     </>
   );
 
