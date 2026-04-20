@@ -36,9 +36,11 @@ app.use(express.json());
 
 function requireMongo(req, res, next) {
   if (mongoose.connection.readyState === 1) return next();
+  const hint = getMongoConnectHint();
+  const fallback =
+    "Database is not connected. On Render (or your API host), set MONGODB_URI to the full mongodb+srv://… string from Atlas → Database → Connect → Drivers — same as in local server/.env — then restart the service. Atlas → Network Access must allow 0.0.0.0/0 (or your host’s IPs).";
   return res.status(503).json({
-    message:
-      "Database is not connected. In Atlas → Database → Connect → Drivers, copy your connection string into server/.env as MONGODB_URI (or set MONGODB_USER, MONGODB_PASSWORD, and your real MONGODB_CLUSTER_HOST — not the xxxxx example). Restart the API.",
+    message: hint || fallback,
   });
 }
 
