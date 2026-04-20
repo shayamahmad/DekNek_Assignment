@@ -11,6 +11,7 @@ export default function DbStatusBar() {
     apiReachable: false,
     mongoConnected: false,
     mongoState: null,
+    mongoReadyState: null,
     mongoHint: null,
   });
 
@@ -26,6 +27,7 @@ export default function DbStatusBar() {
           apiReachable: true,
           mongoConnected: Boolean(data.mongo?.connected),
           mongoState: data.mongo?.state ?? null,
+          mongoReadyState: typeof data.mongo?.readyState === "number" ? data.mongo.readyState : null,
           mongoHint: data.mongo?.hint ?? null,
         });
       } catch {
@@ -35,6 +37,7 @@ export default function DbStatusBar() {
           apiReachable: false,
           mongoConnected: false,
           mongoState: null,
+          mongoReadyState: null,
         });
       }
     }
@@ -119,15 +122,27 @@ export default function DbStatusBar() {
     );
   }
 
+  const stateLine =
+    status.mongoState ||
+    (status.mongoReadyState !== null ? `readyState ${status.mongoReadyState}` : null);
+
+  const fallbackHint = isDeployedFrontend()
+    ? "MongoDB is not connected on the API server. In your API host’s environment (Render, Railway, etc.), set MONGODB_URI or the split Atlas variables, restart the service, and allow Atlas Network Access for outbound connections from that host."
+    : "MongoDB is not connected. Set MONGODB_URI (or MONGODB_PASSWORD + cluster host) in server/.env, then restart the API. Confirm Atlas Database User password and Network Access.";
+
   return (
     <div
       className="sticky top-0 z-[100] border-b border-amber-500/30 bg-amber-950/40 px-4 py-2 text-center text-xs text-amber-100 backdrop-blur-md"
       role="alert"
     >
-      MongoDB not connected ({status.mongoState ?? "unknown"}) — set your Atlas password in{" "}
-      <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">server/.env</code>{" "}
-      (<code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">MONGODB_PASSWORD</code> or{" "}
-      <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">MONGODB_URI</code>), then restart the API.
+      <span className="block">
+        {status.mongoHint?.trim() ? status.mongoHint.trim() : fallbackHint}
+      </span>
+      {stateLine ? (
+        <span className="mt-1 block text-[11px] text-amber-200/80">
+          Status: {stateLine}
+        </span>
+      ) : null}
     </div>
   );
 }

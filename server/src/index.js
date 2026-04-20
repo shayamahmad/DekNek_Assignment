@@ -51,16 +51,30 @@ const mongoStateLabels = {
   3: "disconnecting",
 };
 
-app.get("/api/health", (_req, res) => {
+function buildMongoHealth() {
   const rs = mongoose.connection.readyState;
+  const connected = rs === 1;
+  let hint = connected ? null : getMongoConnectHint();
+  if (!connected && !hint) {
+    if (rs === 2) hint = "MongoDB is still connecting…";
+    else if (rs === 3) hint = "MongoDB is disconnecting; wait or restart the API.";
+    else {
+      hint =
+        "Database not connected. Set MONGODB_URI (or MONGODB_USER + MONGODB_PASSWORD + MONGODB_CLUSTER_HOST) in this API’s environment variables (e.g. server/.env locally, or your host’s dashboard in production), then restart. Use Atlas → Database → Connect → Drivers for the connection string.";
+    }
+  }
+  return {
+    connected,
+    readyState: rs,
+    state: mongoStateLabels[rs] ?? "disconnected",
+    hint,
+  };
+}
+
+app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
-    mongo: {
-      connected: rs === 1,
-      readyState: rs,
-      state: mongoStateLabels[rs] ?? "unknown",
-      hint: rs === 1 ? null : getMongoConnectHint(),
-    },
+    mongo: buildMongoHealth(),
   });
 });
 
