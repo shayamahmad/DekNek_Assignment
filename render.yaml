@@ -1,6 +1,10 @@
 # Render Blueprint — deploy the Express API from /server
 # https://render.com/docs/blueprint-spec
 #
+# IMPORTANT — Start Command must be exactly: npm start
+# Do NOT use: npm run dev, node --watch, or concurrently (those fail on Render and show "Waiting for file changes").
+# Root Directory must stay "server" so package.json from /server is used.
+#
 # After connecting this repo, add these in the Render dashboard (Environment):
 #   MONGODB_URI   — same as local server/.env (Atlas connection string)
 #   JWT_SECRET    — long random string (match nothing sensitive in git)

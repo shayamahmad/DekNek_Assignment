@@ -1,8 +1,13 @@
 import dns from "node:dns";
 import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
 
 let memoryServer = null;
+
+/** Loaded only when USE_IN_MEMORY_DB=true — avoids loading mongodb-memory-server on production hosts (e.g. Render). */
+async function getMemoryServer() {
+  const { MongoMemoryServer } = await import("mongodb-memory-server");
+  return MongoMemoryServer;
+}
 
 /** Shown on GET /api/health when MongoDB is not connected (no secrets). */
 let mongoConnectHint = null;
@@ -30,7 +35,8 @@ function hintFromDriverError(err, isAtlas) {
   return "Check the MongoDB error in the server terminal, then fix MONGODB_URI or MONGODB_USER+MONGODB_PASSWORD+MONGODB_CLUSTER_HOST in server/.env and restart.";
 }
 
-const dnsServers = process.env.MONGODB_DNS_SERVERS?.split(",")
+const dnsServers = (process.env.MONGODB_DNS_SERVERS ?? "")
+  .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
 if (dnsServers.length) {
@@ -95,6 +101,7 @@ export async function connectDB() {
   if (process.env.USE_IN_MEMORY_DB === "true") {
     setMongoConnectHint(null);
     const dbName = (process.env.MONGODB_DB_NAME || "auth_app").trim() || "auth_app";
+    const MongoMemoryServer = await getMemoryServer();
     memoryServer = await MongoMemoryServer.create();
     uri = memoryServer.getUri(dbName);
     console.log(

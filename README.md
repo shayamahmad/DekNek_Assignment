@@ -114,3 +114,12 @@ Vercel only serves the **React** app. The **Express API** and **MongoDB connecti
 If the browser blocks requests, confirm **`CLIENT_ORIGIN`** on Render is exactly your Vercel site origin (scheme + host, no path), e.g. `https://dek-nek-assignment.vercel.app`.
 
 You should then see the green **MongoDB connected** bar on the deployed site.
+
+### Render troubleshooting
+
+| Symptom | Fix |
+| --- | --- |
+| **`Waiting for file changes before restarting`** | Render is running **watch/dev** mode. Open the service → **Settings** → set **Start Command** to **`npm start`** only (not `npm run dev`, not `node --watch`). |
+| **`No open ports` / `Port scan timeout`** | The process never listened on `PORT` because it crashed first. Fix the startup error in **Logs** (often wrong **Root Directory** or start command). |
+| **`ERR_MODULE_NOT_FOUND`** | **Root Directory** must be **`server`** (the folder that contains `package.json` with `"start": "node src/index.js"`). If Root is the repo root, Render runs the wrong `package.json` and startup breaks. |
+| **Node version** | This repo expects **Node 18+**. Blueprint sets `NODE_VERSION=20`; if you created the service manually, set **Environment** → `NODE_VERSION` → `20`. |
