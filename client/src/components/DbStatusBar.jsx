@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client.js";
-import { hasViteApiUrl, isDeployedFrontend } from "../utils/deployContext.js";
+import { getViteApiBaseUrl, hasViteApiUrl, isDeployedFrontend } from "../utils/deployContext.js";
 
 /**
  * Polls GET /api/health and shows whether the API and MongoDB are reachable.
@@ -126,9 +126,10 @@ export default function DbStatusBar() {
     status.mongoState ||
     (status.mongoReadyState !== null ? `readyState ${status.mongoReadyState}` : null);
 
-  const fallbackHint = isDeployedFrontend()
-    ? "MongoDB is not connected on the API server. In your API host’s environment (Render, Railway, etc.), set MONGODB_URI or the split Atlas variables, restart the service, and allow Atlas Network Access for outbound connections from that host."
-    : "MongoDB is not connected. Set MONGODB_URI (or MONGODB_PASSWORD + cluster host) in server/.env, then restart the API. Confirm Atlas Database User password and Network Access.";
+  const apiBase = getViteApiBaseUrl();
+
+  const localMongoFallback =
+    "MongoDB is not connected. Set MONGODB_URI (or MONGODB_PASSWORD + cluster host) in server/.env, then restart the API. Confirm Atlas Database User password and Network Access.";
 
   return (
     <div
@@ -136,7 +137,32 @@ export default function DbStatusBar() {
       role="alert"
     >
       <span className="block">
-        {status.mongoHint?.trim() ? status.mongoHint.trim() : fallbackHint}
+        {status.mongoHint?.trim() ? (
+          status.mongoHint.trim()
+        ) : isDeployedFrontend() ? (
+          <>
+            Vercel only runs the React app — it does not connect to MongoDB. Your browser talks to the API configured by{" "}
+            <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">VITE_API_URL</code>
+            {apiBase ? (
+              <>
+                {" "}
+                (currently{" "}
+                <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px] break-all">{apiBase}</code>
+                ).
+              </>
+            ) : (
+              "."
+            )}{" "}
+            Copy the same <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">MONGODB_URI</code>{" "}
+            (and <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">JWT_SECRET</code>, etc.) from
+            your working local <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">server/.env</code>{" "}
+            into that API&apos;s environment on Render/Railway/etc., redeploy or restart the API, and in Atlas → Network
+            Access allow <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">0.0.0.0/0</code> (or
+            your host&apos;s egress) so Atlas accepts the connection.
+          </>
+        ) : (
+          localMongoFallback
+        )}
       </span>
       {stateLine ? (
         <span className="mt-1 block text-[11px] text-amber-200/80">

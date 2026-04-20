@@ -13,3 +13,8 @@ export function isDeployedFrontend() {
 export function hasViteApiUrl() {
   return Boolean(String(import.meta.env.VITE_API_URL ?? "").trim());
 }
+
+/** Public API base URL from build-time env (no secrets). */
+export function getViteApiBaseUrl() {
+  return String(import.meta.env.VITE_API_URL ?? "").trim().replace(/\/$/, "");
+}
