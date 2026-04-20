@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+  body {
+    @apply min-h-screen bg-[#0a0c10] text-slate-100 antialiased;
+    background-image:
+      radial-gradient(ellipse 120% 80% at 50% -30%, rgba(99, 102, 241, 0.18), transparent),
+      radial-gradient(ellipse 60% 50% at 100% 0%, rgba(34, 211, 238, 0.08), transparent),
+      radial-gradient(ellipse 50% 40% at 0% 100%, rgba(168, 85, 247, 0.06), transparent);
+  }
+}
+
+@layer components {
+  .input-base {
+    @apply w-full rounded-xl border border-slate-700/80 bg-slate-950/60 px-4 py-3 text-[15px] text-slate-100 shadow-inner outline-none transition placeholder:text-slate-500;
+    @apply focus:border-indigo-500/70 focus:ring-2 focus:ring-indigo-500/25;
+  }
+  .label-base {
+    @apply mb-1.5 block text-sm font-medium text-slate-300;
+  }
+  .card-glass {
+    @apply rounded-2xl border border-white/10 bg-surface-raised/90 shadow-card backdrop-blur-xl;
+  }
+}

@@ -1,0 +1,16 @@
+# Optional local MongoDB for development.
+# Requires Docker Desktop: https://docs.docker.com/desktop/
+# Usage: docker compose up -d
+# Then set server/.env: MONGODB_URI=mongodb://127.0.0.1:27017/auth_app
+# (and comment out MONGODB_USER / MONGODB_PASSWORD / MONGODB_CLUSTER_HOST if you use those.)
+
+services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_dev_data:/data/db
+
+volumes:
+  mongo_dev_data:

@@ -1,0 +1,15 @@
+{
+  "name": "auth-fullstack",
+  "private": true,
+  "scripts": {
+    "setup": "npm install && npm install --prefix server && npm install --prefix client",
+    "dev": "concurrently -n server,client -c blue,magenta \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "start": "npm run dev",
+    "start:server": "npm run start --prefix server",
+    "start:client": "npm run dev --prefix client",
+    "test:db": "npm run test:db --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
