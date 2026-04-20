@@ -10,7 +10,9 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 const clientOrigins = [
-  process.env.CLIENT_ORIGIN,
+  ...(process.env.CLIENT_ORIGIN?.split(",")
+    .map((s) => s.trim())
+    .filter(Boolean) ?? []),
   "http://localhost:5173",
   "http://127.0.0.1:5173",
   "http://localhost:5174",
