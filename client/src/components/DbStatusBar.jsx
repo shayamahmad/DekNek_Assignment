@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client.js";
-import { getViteApiBaseUrl, hasViteApiUrl, isDeployedFrontend } from "../utils/deployContext.js";
+import { hasViteApiUrl, isDeployedFrontend } from "../utils/deployContext.js";
 
 /**
  * Polls GET /api/health and shows whether the API and MongoDB are reachable.
@@ -141,34 +141,22 @@ export default function DbStatusBar() {
     status.mongoState ||
     (status.mongoReadyState !== null ? `readyState ${status.mongoReadyState}` : null);
 
-  const apiBase = getViteApiBaseUrl();
-
   const localMongoFallback =
     "MongoDB is not connected. Set MONGODB_URI (or MONGODB_PASSWORD + cluster host) in server/.env, then restart the API. Confirm Atlas Database User password and Network Access.";
 
-  const deployedMongoFallback = (
-    <>
-      MongoDB isn&apos;t connected on the API. Set env on <strong>Render</strong> (copy from local{" "}
-      <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">server/.env</code>), check{" "}
-      <strong>Logs</strong> for errors. Vercel: <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">VITE_API_URL</code>
-      {apiBase ? (
-        <>
-          {" "}
-          → <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px] break-all">{apiBase}</code>
-        </>
-      ) : null}
-      . More: README → Production.
-    </>
-  );
+  const hint = status.mongoHint?.trim() ?? "";
+
+  // Production: no generic nag — only show a bar if the API returned a concrete hint (e.g. Atlas auth).
+  if (isDeployedFrontend() && !hint) {
+    return null;
+  }
 
   return (
     <div
       className="sticky top-0 z-[100] border-b border-amber-500/30 bg-amber-950/40 px-4 py-2 text-center text-xs text-amber-100 backdrop-blur-md"
       role="alert"
     >
-      <span className="block">
-        {status.mongoHint?.trim() ? status.mongoHint.trim() : isDeployedFrontend() ? deployedMongoFallback : localMongoFallback}
-      </span>
+      <span className="block">{hint || localMongoFallback}</span>
       {stateLine ? (
         <span className="mt-1 block text-[11px] text-amber-200/80">
           Status: {stateLine}
