@@ -122,6 +122,21 @@ export default function DbStatusBar() {
     );
   }
 
+  const rs = status.mongoReadyState;
+  const isConnecting = status.mongoState === "connecting" || rs === 2;
+
+  if (isConnecting) {
+    return (
+      <div
+        className="sticky top-0 z-[100] border-b border-slate-500/25 bg-slate-950/80 px-4 py-2 text-center text-xs text-slate-300 backdrop-blur-md"
+        role="status"
+        aria-live="polite"
+      >
+        Connecting to MongoDB… (this can take a few seconds right after your API wakes up on Render)
+      </div>
+    );
+  }
+
   const stateLine =
     status.mongoState ||
     (status.mongoReadyState !== null ? `readyState ${status.mongoReadyState}` : null);
@@ -131,34 +146,31 @@ export default function DbStatusBar() {
   const localMongoFallback =
     "MongoDB is not connected. Set MONGODB_URI (or MONGODB_PASSWORD + cluster host) in server/.env, then restart the API. Confirm Atlas Database User password and Network Access.";
 
+  const deployedMongoFallback = (
+    <>
+      Database isn&apos;t ready on your API yet. On <strong>Render</strong> set <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">MONGODB_URI</code>{" "}
+      (same as local <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">server/.env</code>),{" "}
+      <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">JWT_SECRET</code>, and{" "}
+      <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">CLIENT_ORIGIN</code> = this site&apos;s URL;
+      restart the service; check <strong>Render → Logs</strong> for Atlas errors. Vercel:{" "}
+      <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">VITE_API_URL</code>
+      {apiBase ? (
+        <>
+          {" "}
+          = <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px] break-all">{apiBase}</code>
+        </>
+      ) : null}
+      . Details: <strong>README</strong> → Production.
+    </>
+  );
+
   return (
     <div
       className="sticky top-0 z-[100] border-b border-amber-500/30 bg-amber-950/40 px-4 py-2 text-center text-xs text-amber-100 backdrop-blur-md"
       role="alert"
     >
       <span className="block">
-        {status.mongoHint?.trim() ? (
-          status.mongoHint.trim()
-        ) : isDeployedFrontend() ? (
-          <>
-            MongoDB isn&apos;t connected on your API. Ensure{" "}
-            <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">MONGODB_URI</code>,{" "}
-            <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">JWT_SECRET</code>, and{" "}
-            <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">CLIENT_ORIGIN</code> (this site) are
-            set on your API host (e.g. Render), then restart. Vercel only needs{" "}
-            <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">VITE_API_URL</code>
-            {apiBase ? (
-              <>
-                {" "}
-                →{" "}
-                <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px] break-all">{apiBase}</code>
-              </>
-            ) : null}
-            . Full steps: see repo <strong>README</strong> → <strong>Production: Vercel + Render + Atlas</strong>.
-          </>
-        ) : (
-          localMongoFallback
-        )}
+        {status.mongoHint?.trim() ? status.mongoHint.trim() : isDeployedFrontend() ? deployedMongoFallback : localMongoFallback}
       </span>
       {stateLine ? (
         <span className="mt-1 block text-[11px] text-amber-200/80">
