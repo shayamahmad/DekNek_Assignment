@@ -1,8 +1,14 @@
 import axios from "axios";
 
-// Dev: empty baseURL + Vite proxy → /api on localhost:5000. Production: set VITE_API_URL to your deployed API (no trailing slash).
+function normalizeApiBase(url) {
+  const t = typeof url === "string" ? url.trim() : "";
+  if (!t) return "";
+  return t.replace(/\/+$/, "");
+}
+
+// Dev: empty baseURL + Vite proxy → /api on localhost:5000. Production: VITE_API_URL = Render (etc.) base URL, no /api suffix.
 const baseURL =
-  import.meta.env.VITE_API_URL?.trim() || (import.meta.env.DEV ? "" : "");
+  normalizeApiBase(import.meta.env.VITE_API_URL) || (import.meta.env.DEV ? "" : "");
 
 export const api = axios.create({
   baseURL,

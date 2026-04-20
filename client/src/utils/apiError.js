@@ -5,6 +5,14 @@ export function getApiErrorMessage(err, fallback = "Something went wrong") {
   const fromServer = err.response?.data?.message;
   if (fromServer) return fromServer;
 
+  const status = err.response?.status;
+  if (status === 405) {
+    if (isDeployedFrontend()) {
+      return "405 Not Allowed: requests are hitting the Vercel app, not your API. Set VITE_API_URL in Vercel (Production) to your Render API URL, e.g. https://your-service.onrender.com — no trailing slash — then Redeploy.";
+    }
+    return "405 Not Allowed — check the API URL and that the server exposes POST for this route.";
+  }
+
   const isNetwork =
     err.code === "ERR_NETWORK" ||
     err.message === "Network Error" ||

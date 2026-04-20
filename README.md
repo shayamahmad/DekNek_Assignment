@@ -113,6 +113,10 @@ Vercel only serves the **React** app. The **Express API** and **MongoDB connecti
 
 If the browser blocks requests, confirm **`CLIENT_ORIGIN`** on Render is exactly your Vercel site origin (scheme + host, no path), e.g. `https://dek-nek-assignment.vercel.app`.
 
+### Signup/login returns **405** on Vercel
+
+The browser is **POST**ing to the **static Vercel app**, not to Render. **`VITE_API_URL`** is missing, wrong, or the frontend was not rebuilt after setting it. Fix: Vercel → Environment Variables → **`VITE_API_URL`** = `https://YOUR-SERVICE.onrender.com` (no trailing slash) → **Redeploy**.
+
 You should then see the green **MongoDB connected** bar on the deployed site.
 
 ### Render troubleshooting
