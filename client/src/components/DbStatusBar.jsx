@@ -141,24 +141,20 @@ export default function DbStatusBar() {
           status.mongoHint.trim()
         ) : isDeployedFrontend() ? (
           <>
-            Vercel only runs the React app — it does not connect to MongoDB. Your browser talks to the API configured by{" "}
+            MongoDB isn&apos;t connected on your API. Ensure{" "}
+            <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">MONGODB_URI</code>,{" "}
+            <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">JWT_SECRET</code>, and{" "}
+            <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">CLIENT_ORIGIN</code> (this site) are
+            set on your API host (e.g. Render), then restart. Vercel only needs{" "}
             <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">VITE_API_URL</code>
             {apiBase ? (
               <>
                 {" "}
-                (currently{" "}
+                →{" "}
                 <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px] break-all">{apiBase}</code>
-                ).
               </>
-            ) : (
-              "."
-            )}{" "}
-            Copy the same <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">MONGODB_URI</code>{" "}
-            (and <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">JWT_SECRET</code>, etc.) from
-            your working local <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">server/.env</code>{" "}
-            into that API&apos;s environment on Render/Railway/etc., redeploy or restart the API, and in Atlas → Network
-            Access allow <code className="rounded bg-black/30 px-1.5 py-0.5 font-mono text-[11px]">0.0.0.0/0</code> (or
-            your host&apos;s egress) so Atlas accepts the connection.
+            ) : null}
+            . Full steps: see repo <strong>README</strong> → <strong>Production: Vercel + Render + Atlas</strong>.
           </>
         ) : (
           localMongoFallback

@@ -1,0 +1,25 @@
+# Render Blueprint — deploy the Express API from /server
+# https://render.com/docs/blueprint-spec
+#
+# After connecting this repo, add these in the Render dashboard (Environment):
+#   MONGODB_URI   — same as local server/.env (Atlas connection string)
+#   JWT_SECRET    — long random string (match nothing sensitive in git)
+#   CLIENT_ORIGIN — https://YOUR-APP.vercel.app  (comma-separate if you also use localhost)
+#
+# Then in Vercel: VITE_API_URL = your Render service URL (https://auth-api-xxxx.onrender.com), no trailing slash — Redeploy.
+
+services:
+  - type: web
+    name: auth-api
+    runtime: node
+    region: oregon
+    plan: free
+    rootDir: server
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: USE_IN_MEMORY_DB
+        value: "false"

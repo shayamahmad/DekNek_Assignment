@@ -68,3 +68,49 @@ Then in **`server/.env`** set:
 `MONGODB_URI=mongodb://127.0.0.1:27017/auth_app`
 
 (and remove or comment out the Atlas / split-variable settings so only one connection method is active).
+
+---
+
+## Production: Vercel (frontend) + Render (API) + Atlas (database)
+
+Vercel only serves the **React** app. The **Express API** and **MongoDB connection** run on a separate host (below we use [Render](https://render.com); Railway/Fly work similarly).
+
+### 1. MongoDB Atlas
+
+- **Network Access**: allow **`0.0.0.0/0`** so cloud APIs can connect (or add your provider’s IPs later).
+- **Database user** + **`MONGODB_URI`**: same as local testing (`npm run test:db` in `server`).
+
+### 2. Deploy the API on Render
+
+1. Push this repo to GitHub (already done if you use it).
+2. In Render: **New** → **Blueprint** → connect the repo → use the root **`render.yaml`** (or **Web Service** with **Root Directory** = `server`).
+3. **Build**: `npm ci` · **Start**: `npm start` · **Instance**: Free tier is fine (cold starts possible).
+4. In **Environment**, add (copy from your working **`server/.env`**):
+
+   | Key | Example |
+   | --- | --- |
+   | `MONGODB_URI` | `mongodb+srv://...` |
+   | `JWT_SECRET` | long random string |
+   | `USE_IN_MEMORY_DB` | `false` |
+   | `CLIENT_ORIGIN` | `https://YOUR-APP.vercel.app` (your real Vercel URL; add `,http://localhost:5173` if you still test locally against prod API) |
+
+5. **Save** and wait until the service is **Live**. Open `https://YOUR-SERVICE.onrender.com/api/health` — `mongo.connected` should become `true` once Atlas accepts the connection.
+
+### 3. Deploy the frontend on Vercel
+
+1. Import the same GitHub repo; Vercel uses the root **`vercel.json`** (builds `client/` → `client/dist`).
+2. **Settings → Environment Variables** → add for **Production** (and **Preview** too if you use preview deployments):
+
+   | Key | Value |
+   | --- | --- |
+   | `VITE_API_URL` | `https://YOUR-SERVICE.onrender.com` — **no trailing slash** |
+
+3. **Deployments → Redeploy** (or push a commit) so the client **rebuilds** with `VITE_API_URL` baked in. Vite reads this only at **build** time.
+
+4. Locally verify the static build: `npm run build:client` (optional).
+
+### 4. CORS
+
+If the browser blocks requests, confirm **`CLIENT_ORIGIN`** on Render is exactly your Vercel site origin (scheme + host, no path), e.g. `https://dek-nek-assignment.vercel.app`.
+
+You should then see the green **MongoDB connected** bar on the deployed site.
